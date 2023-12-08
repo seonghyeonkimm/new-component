@@ -39,4 +39,5 @@ module.exports = [
   "You belong in this world ❤️",
   "Live your best life ❤️",
   "Wherever it takes me, I'm down for the ride. 🎶",
+  "You are beautiful. 🌸",
 ];
