@@ -1,5 +1,11 @@
 # new-component-react
 
+## 0.0.3
+
+### Patch Changes
+
+- dcf95f8: Update bin key
+
 ## 0.0.2
 
 ### Patch Changes
