@@ -1,5 +1,11 @@
 # new-component-react
 
+## 0.0.4
+
+### Patch Changes
+
+- acb406f: Add prettier to dependencies
+
 ## 0.0.3
 
 ### Patch Changes
