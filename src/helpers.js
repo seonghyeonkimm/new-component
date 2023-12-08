@@ -31,8 +31,12 @@ module.exports.getConfig = () => {
   const currentPath = process.cwd();
 
   const defaults = {
-    lang: "js",
-    dir: "src/components",
+    default: {
+      component: {
+        dir: "src/components",
+        index: true,
+      },
+    },
   };
 
   const globalOverrides = requireOptional(
@@ -47,21 +51,13 @@ module.exports.getConfig = () => {
 };
 
 module.exports.buildPrettifier = () => {
-  let config = prettier.resolveConfig.sync(process.cwd());
-
-  // default config:
-  config = config || {
-    semi: true,
-    singleQuote: true,
-    trailingComma: "es5",
-  };
-
-  // Prettier warns if we don't specify a parser or a file path.
-  // TODO: Maybe we should create the file first, so that it can
-  // serve as the file path?
-  config.parser = config.parser || "babel";
-
-  return (text) => prettier.format(text, config);
+  return (text) =>
+    prettier.format(text, {
+      semi: true,
+      singleQuote: false,
+      trailingComma: "es5",
+      parser: "babel",
+    });
 };
 
 module.exports.createParentDirectoryIfNecessary = async (dir) => {
@@ -82,21 +78,7 @@ const colors = {
   darkGray: [90, 90, 90],
 };
 
-const langNames = {
-  js: "JavaScript",
-  ts: "TypeScript",
-};
-
-const logComponentLang = (selected) =>
-  ["js", "ts"]
-    .map((option) =>
-      option === selected
-        ? `${chalk.bold.rgb(...colors.blue)(langNames[option])}`
-        : `${chalk.rgb(...colors.darkGray)(langNames[option])}`,
-    )
-    .join("  ");
-
-module.exports.logIntro = ({ name, dir, lang }) => {
+module.exports.logIntro = ({ name, dir, template }) => {
   console.info("\n");
   console.info(
     `✨  Creating the ${chalk.bold.rgb(...colors.gold)(name)} component ✨`,
@@ -104,10 +86,10 @@ module.exports.logIntro = ({ name, dir, lang }) => {
   console.info("\n");
 
   const pathString = chalk.bold.rgb(...colors.blue)(dir);
-  const langString = logComponentLang(lang);
+  const templateString = chalk.rgb(...colors.green)(template);
 
   console.info(`Directory:  ${pathString}`);
-  console.info(`Language:   ${langString}`);
+  console.info(`Template:   ${templateString}`);
   console.info(
     chalk.rgb(...colors.darkGray)("========================================="),
   );
@@ -133,3 +115,9 @@ module.exports.logError = (error) => {
   console.info(chalk.rgb(...colors.red)(error));
   console.info("\n");
 };
+
+module.exports.toPascalCase = (str) =>
+  str
+    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    .map((x) => x.charAt(0).toUpperCase() + x.slice(1).toLowerCase())
+    .join("");

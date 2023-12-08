@@ -12,6 +12,7 @@ const {
   logItemCompletion,
   logConclusion,
   logError,
+  toPascalCase,
 } = require("./helpers");
 const {
   mkDirPromise,
@@ -29,20 +30,22 @@ const config = getConfig();
 // Convenience wrapper around Prettier, so that config doesn't have to be
 // passed every time.
 const prettify = buildPrettifier(config.prettierConfig);
+const templateList = fs
+  .readdirSync(path.join(__dirname, "./templates"))
+  .map((item) => `"${item.slice(0, item.lastIndexOf("."))}"`);
 
 program
   .version(version)
   .arguments("<componentName>")
   .option(
-    "-l, --lang <language>",
-    'Which language to use (default: "js")',
-    /^(js|ts)$/i,
-    config.lang,
+    "-p, --project <projectName>",
+    "Project name of the configuration",
+    "default",
   )
   .option(
-    "-d, --dir <pathToDirectory>",
-    'Path to the "components" directory (default: "src/components")',
-    config.dir,
+    `-t, --template <templateName>`,
+    `Template name to create (options: ${templateList.join(", ")})`,
+    "component",
   )
   .parse(process.argv);
 
@@ -50,40 +53,31 @@ const [componentName] = program.args;
 
 const options = program.opts();
 
-const fileExtension = options.lang === "js" ? "js" : "tsx";
-const indexExtension = options.lang === "js" ? "js" : "ts";
+const fileExtension = "tsx";
+const indexExtension = "ts";
 
 // Find the path to the selected template file.
-const templatePath = `./templates/${options.lang}.js`;
+const templatePath = `./templates/${options.template}.js`;
+const templateConfig = (
+  options.project === "default"
+    ? config["default"]
+    : config["project"][options.project]
+)[options.template];
 
 // Get all of our file paths worked out, for the user's project.
-const componentDir = `${options.dir}/${componentName}`;
+const componentDir = `${templateConfig.dir}/${componentName}`;
 const filePath = `${componentDir}/${componentName}.${fileExtension}`;
 const indexPath = `${componentDir}/index.${indexExtension}`;
-
-// Our index template is super straightforward, so we'll just inline it for now.
-const indexTemplate = prettify(`\
-export * from './${componentName}';
-export { default } from './${componentName}';
-`);
 
 logIntro({
   name: componentName,
   dir: componentDir,
-  lang: options.lang,
+  template: options.template,
 });
-
-// Check if componentName is provided
-if (!componentName) {
-  logError(
-    `Sorry, you need to specify a name for your component like this: new-component <name>`,
-  );
-  process.exit(0);
-}
 
 // Check to see if the parent directory exists.
 // Create it if not
-createParentDirectoryIfNecessary(options.dir);
+createParentDirectoryIfNecessary(templateConfig.dir);
 
 // Check to see if this component has already been created
 const fullPathToComponentDir = path.resolve(componentDir);
@@ -101,25 +95,36 @@ mkDirPromise(componentDir)
     logItemCompletion("Directory created.");
     return template;
   })
+  // TODO: Pascalcase로 변경
   .then((template) =>
     // Replace our placeholders with real data (so far, just the component name)
-    template.replace(/COMPONENT_NAME/g, componentName),
+    template.replace(/COMPONENT_NAME/g, toPascalCase(componentName)),
   )
-  .then((template) =>
-    // Format it using prettier, to ensure style consistency, and write to file.
-    writeFilePromise(filePath, prettify(template)),
-  )
+  .then((template) => {
+    return prettify(template).then((formattedTemplate) =>
+      writeFilePromise(filePath, formattedTemplate),
+    );
+  })
   .then((template) => {
     logItemCompletion("Component built and saved to disk.");
     return template;
   })
-  .then(() =>
-    // We also need the `index.js` file, which allows easy importing.
-    writeFilePromise(indexPath, prettify(indexTemplate)),
-  )
-  .then((template) => {
+  .then(() => {
+    if (templateConfig.index === false) {
+      return;
+    }
+
+    const indexTemplate = `\
+    export * from './${componentName}';
+    export { default } from './${componentName}';
+    `;
+
+    return prettify(indexTemplate).then((formattedTemplate) =>
+      writeFilePromise(indexPath, formattedTemplate),
+    );
+  })
+  .then(() => {
     logItemCompletion("Index file built and saved to disk.");
-    return template;
   })
   .then(() => {
     logConclusion();
