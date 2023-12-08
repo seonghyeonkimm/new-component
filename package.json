@@ -24,7 +24,7 @@
   "author": "Seonghyeon Kim",
   "license": "MIT",
   "bin": {
-    "new-component": "./src/index.js"
+    "new-component-react": "./src/index.js"
   },
   "publishConfig": {
     "access": "public",
