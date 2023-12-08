@@ -1,14 +1,14 @@
 {
-  "name": "new-component",
-  "version": "5.0.2",
+  "name": "new-component-react",
+  "version": "0.0.1",
   "description": "CLI for creating new React components",
-  "homepage": "https://github.com/joshwcomeau/new-component",
+  "homepage": "https://github.com/seonghyeonkimm/new-component",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joshwcomeau/new-component"
+    "url": "https://github.com/seonghyeonkimm/new-component"
   },
   "bugs": {
-    "url": "https://github.com/joshwcomeau/new-component/issues"
+    "url": "https://github.com/seonghyeonkimm/new-component/issues"
   },
   "main": "src/index.js",
   "scripts": {
@@ -21,16 +21,21 @@
     "component",
     "boilerplate"
   ],
-  "author": "Joshua Comeau",
+  "author": "Seonghyeon Kim",
   "license": "MIT",
   "bin": {
     "new-component": "./src/index.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "chalk": "4",
     "commander": "10"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.1",
     "eslint": "^8.55.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.0.1",
