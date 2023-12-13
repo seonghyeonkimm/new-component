@@ -55,9 +55,11 @@ const options = program.opts();
 
 const fileExtension = "tsx";
 const indexExtension = "ts";
+const cssExtension = "css.ts";
 
 // Find the path to the selected template file.
 const templatePath = `./templates/${options.template}.js`;
+const cssTemplatePath = `./templates/component.css.js`;
 const templateConfig = (
   options.project === "default"
     ? config["default"]
@@ -67,6 +69,7 @@ const templateConfig = (
 // Get all of our file paths worked out, for the user's project.
 const componentDir = `${templateConfig.dir}/${componentName}`;
 const filePath = `${componentDir}/${componentName}.${fileExtension}`;
+const fileCssPath = `${componentDir}/${componentName}.${cssExtension}`;
 const indexPath = `${componentDir}/index.${indexExtension}`;
 
 logIntro({
@@ -97,8 +100,9 @@ mkDirPromise(componentDir)
   })
   // TODO: Pascalcase로 변경
   .then((template) =>
-    // Replace our placeholders with real data (so far, just the component name)
-    template.replace(/COMPONENT_NAME/g, toPascalCase(componentName)),
+    template
+      .replace(/COMPONENT_NAME/g, toPascalCase(componentName))
+      .replace(/FILE_NAME/g, componentName),
   )
   .then((template) => {
     return prettify(template).then((formattedTemplate) =>
@@ -108,6 +112,12 @@ mkDirPromise(componentDir)
   .then((template) => {
     logItemCompletion("Component built and saved to disk.");
     return template;
+  })
+  .then(() => readFilePromiseRelative(cssTemplatePath))
+  .then((cssTemplate) => {
+    return prettify(cssTemplate).then((formattedTemplate) =>
+      writeFilePromise(fileCssPath, formattedTemplate),
+    );
   })
   .then(() => {
     if (templateConfig.index === false) {
