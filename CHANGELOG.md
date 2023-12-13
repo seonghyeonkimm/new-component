@@ -1,5 +1,11 @@
 # new-component-react
 
+## 0.0.5
+
+### Patch Changes
+
+- 2e55294: Add component.css.js
+
 ## 0.0.4
 
 ### Patch Changes
